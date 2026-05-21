@@ -31,7 +31,8 @@ import { NoteService } from '../services/note.service';
             name="title"
             class="form-input title-input"
             placeholder="Título"
-            [(ngModel)]="title"
+            [ngModel]="title()"
+            (ngModelChange)="title.set($event)"
             required
             autocomplete="off"
           />
@@ -42,7 +43,8 @@ import { NoteService } from '../services/note.service';
           name="content"
           class="form-input content-input"
           [placeholder]="isExpanded() ? 'Escribe una nota...' : 'Crear una nota...'"
-          [(ngModel)]="content"
+          [ngModel]="content()"
+          (ngModelChange)="content.set($event)"
           (focus)="expandForm()"
           required
           rows="1"
@@ -57,7 +59,13 @@ import { NoteService } from '../services/note.service';
             <div class="control-row">
               <div class="category-select-wrapper">
                 <label for="category">Categoría:</label>
-                <select id="category" name="category" [(ngModel)]="category" class="input-field select-field">
+                <select 
+                  id="category" 
+                  name="category" 
+                  [ngModel]="category()" 
+                  (ngModelChange)="category.set($event)" 
+                  class="input-field select-field"
+                >
                   @for (cat of noteService.categories(); track cat) {
                     <option [value]="cat">{{ cat }}</option>
                   }
