@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "buildCommand": "ng build",
+  "outputDirectory": "dist/pwa-notes/browser",
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/ngsw.json",
+      "destination": "/ngsw.json"
+    },
+    {
+      "source": "/ngsw-worker.js",
+      "destination": "/ngsw-worker.js"
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "destination": "/manifest.webmanifest"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
