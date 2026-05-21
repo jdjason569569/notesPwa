@@ -31,9 +31,7 @@ import { NoteService } from '../services/note.service';
             name="title"
             class="form-input title-input"
             placeholder="Título"
-            [ngModel]="title()"
-            (ngModelChange)="title.set($event)"
-            required
+            [(ngModel)]="title"
             autocomplete="off"
           />
         }
@@ -43,10 +41,8 @@ import { NoteService } from '../services/note.service';
           name="content"
           class="form-input content-input"
           [placeholder]="isExpanded() ? 'Escribe una nota...' : 'Crear una nota...'"
-          [ngModel]="content()"
-          (ngModelChange)="content.set($event)"
+          [(ngModel)]="content"
           (focus)="expandForm()"
-          required
           rows="1"
           #contentTextarea
           (input)="adjustHeight(contentTextarea)"
@@ -59,13 +55,7 @@ import { NoteService } from '../services/note.service';
             <div class="control-row">
               <div class="category-select-wrapper">
                 <label for="category">Categoría:</label>
-                <select 
-                  id="category" 
-                  name="category" 
-                  [ngModel]="category()" 
-                  (ngModelChange)="category.set($event)" 
-                  class="input-field select-field"
-                >
+                <select id="category" name="category" [(ngModel)]="category" class="input-field select-field">
                   @for (cat of noteService.categories(); track cat) {
                     <option [value]="cat">{{ cat }}</option>
                   }
@@ -380,7 +370,11 @@ export class NoteForm {
 
   onSubmit(event: Event): void {
     event.preventDefault();
-    if (!this.title().trim() || !this.content().trim()) return;
+    console.log('[ZenNotes] onSubmit called. title:', this.title(), 'content:', this.content());
+    if (!this.title().trim() || !this.content().trim()) {
+      console.log('[ZenNotes] Validation failed: empty title or content');
+      return;
+    }
 
     this.save.emit({
       title: this.title().trim(),
@@ -389,6 +383,7 @@ export class NoteForm {
       color: this.color(),
       isPinned: this.isPinned()
     });
+    console.log('[ZenNotes] Note emitted successfully');
 
     this.resetForm();
   }
