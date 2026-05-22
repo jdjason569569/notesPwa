@@ -5,7 +5,6 @@ import { NoteService } from './services/note.service';
 import { NoteCard } from './components/note-card';
 import { NoteForm } from './components/note-form';
 import { Note } from './models/note.model';
-import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +16,6 @@ import { AuthService } from './services/auth.service';
 export class App implements OnInit {
   // Inject Note Service
   protected noteService = inject(NoteService);
-  protected authService = inject(AuthService);
 
   // Filter States
   searchQuery = signal<string>('');
