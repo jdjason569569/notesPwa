@@ -390,7 +390,10 @@ export class NoteForm {
       if (SpeechRecognition) {
         this.speechRecognitionSupported.set(true);
         this.recognition = new SpeechRecognition();
-        this.recognition.continuous = true;
+        
+        // Android/Mobile suele fallar o cortarse si continuous es true
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        this.recognition.continuous = !isMobile;
         this.recognition.interimResults = true;
         this.recognition.lang = 'es-ES'; // Idioma por defecto
 
@@ -399,6 +402,14 @@ export class NoteForm {
         this.recognition.onerror = (e: any) => {
           console.error('Speech recognition error', e);
           this.isListening.set(false);
+          
+          if (e.error === 'not-allowed') {
+            alert('Error: No se permitió el acceso al micrófono. Si estás en un dispositivo móvil, asegúrate de estar usando una conexión segura (HTTPS) o de haber otorgado los permisos necesarios.');
+          } else if (e.error === 'network') {
+            alert('Error de red: El reconocimiento de voz en Android suele requerir conexión a internet.');
+          } else if (e.error !== 'no-speech') {
+            alert('Error de reconocimiento de voz: ' + e.error);
+          }
         };
         
         this.recognition.onend = () => this.isListening.set(false);
