@@ -150,8 +150,8 @@ export class App implements OnInit {
     } else {
       this.noteService.addNote(noteData);
     }
-    // Patrón de éxito: doble toque ligero
-    this.triggerHaptic([10, 50, 10]);
+    // Patrón de éxito: doble toque más largo para que el hardware lo registre bien
+    this.triggerHaptic([50, 50, 50]);
   }
 
   // Edit Trigger
