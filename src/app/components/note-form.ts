@@ -63,19 +63,18 @@ import { NoteService } from '../services/note.service';
               </div>
 
               <div class="right-controls" style="display: flex; gap: 4px;">
-                @if (speechRecognitionSupported()) {
-                  <button 
-                    type="button" 
-                    class="btn-icon mic-toggle" 
-                    [class.listening]="isListening()"
-                    (click)="toggleListening()"
-                    [title]="isListening() ? 'Detener dictado' : 'Dictar nota por voz'"
-                  >
-                    <span class="material-icons-round">
-                      {{ isListening() ? 'mic' : 'mic_none' }}
-                    </span>
-                  </button>
-                }
+                <button 
+                  type="button" 
+                  class="btn-icon mic-toggle" 
+                  [class.listening]="isListening()"
+                  (click)="toggleListening()"
+                  [disabled]="!speechRecognitionSupported()"
+                  [title]="!speechRecognitionSupported() ? 'El dictado por voz no es compatible con tu navegador actual.' : (isListening() ? 'Detener dictado' : 'Dictar nota por voz')"
+                >
+                  <span class="material-icons-round">
+                    {{ isListening() ? 'mic' : (speechRecognitionSupported() ? 'mic_none' : 'mic_off') }}
+                  </span>
+                </button>
 
                 <button 
                   type="button" 
@@ -240,8 +239,13 @@ import { NoteService } from '../services/note.service';
       transition: all var(--transition-fast);
     }
 
-    .mic-toggle:hover {
+    .mic-toggle:hover:not(:disabled) {
       color: var(--color-rose);
+    }
+
+    .mic-toggle:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .mic-toggle.listening {
