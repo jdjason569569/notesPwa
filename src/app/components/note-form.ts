@@ -62,17 +62,33 @@ import { NoteService } from '../services/note.service';
                 </select>
               </div>
 
-              <button 
-                type="button" 
-                class="btn-icon pin-toggle" 
-                [class.active]="isPinned()"
-                (click)="togglePin()"
-                [title]="isPinned() ? 'Desfijar' : 'Fijar nota'"
-              >
-                <span class="material-icons-round">
-                  {{ isPinned() ? 'push_pin' : 'push_pin_outlined' }}
-                </span>
-              </button>
+              <div class="right-controls" style="display: flex; gap: 4px;">
+                @if (speechRecognitionSupported()) {
+                  <button 
+                    type="button" 
+                    class="btn-icon mic-toggle" 
+                    [class.listening]="isListening()"
+                    (click)="toggleListening()"
+                    [title]="isListening() ? 'Detener dictado' : 'Dictar nota por voz'"
+                  >
+                    <span class="material-icons-round">
+                      {{ isListening() ? 'mic' : 'mic_none' }}
+                    </span>
+                  </button>
+                }
+
+                <button 
+                  type="button" 
+                  class="btn-icon pin-toggle" 
+                  [class.active]="isPinned()"
+                  (click)="togglePin()"
+                  [title]="isPinned() ? 'Desfijar' : 'Fijar nota'"
+                >
+                  <span class="material-icons-round">
+                    {{ isPinned() ? 'push_pin' : 'push_pin_outlined' }}
+                  </span>
+                </button>
+              </div>
             </div>
 
             <!-- Row 2: Color Picker -->
@@ -219,6 +235,27 @@ import { NoteService } from '../services/note.service';
       transform: rotate(45deg);
     }
 
+    .mic-toggle {
+      color: var(--text-muted);
+      transition: all var(--transition-fast);
+    }
+
+    .mic-toggle:hover {
+      color: var(--color-rose);
+    }
+
+    .mic-toggle.listening {
+      color: var(--color-rose);
+      animation: pulse-mic 1.5s infinite;
+      border-radius: 50%;
+    }
+
+    @keyframes pulse-mic {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.4); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(225, 29, 72, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
+    }
+
     .color-picker-wrapper {
       display: flex;
       align-items: center;
@@ -322,6 +359,11 @@ export class NoteForm {
   // Collapse State
   isExpanded = signal<boolean>(false);
 
+  // Speech Recognition State
+  isListening = signal<boolean>(false);
+  speechRecognitionSupported = signal<boolean>(false);
+  private recognition: any = null;
+
   constructor() {
     // Populate form if in edit mode
     effect(() => {
@@ -337,6 +379,41 @@ export class NoteForm {
         this.resetForm();
       }
     });
+
+    // Initialize Web Speech API
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        this.speechRecognitionSupported.set(true);
+        this.recognition = new SpeechRecognition();
+        this.recognition.continuous = true;
+        this.recognition.interimResults = true;
+        this.recognition.lang = 'es-ES'; // Idioma por defecto
+
+        this.recognition.onstart = () => this.isListening.set(true);
+        
+        this.recognition.onerror = (e: any) => {
+          console.error('Speech recognition error', e);
+          this.isListening.set(false);
+        };
+        
+        this.recognition.onend = () => this.isListening.set(false);
+        
+        this.recognition.onresult = (event: any) => {
+          let finalTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            }
+          }
+          if (finalTranscript) {
+            const currentContent = this.content();
+            const prefix = currentContent && !currentContent.endsWith(' ') && !currentContent.endsWith('\\n') ? currentContent + ' ' : currentContent;
+            this.content.set(prefix + finalTranscript.trim() + ' ');
+          }
+        };
+      }
+    }
   }
 
   expandForm(): void {
@@ -358,6 +435,9 @@ export class NoteForm {
     this.color.set('purple');
     this.isPinned.set(false);
     this.isExpanded.set(false);
+    if (this.isListening() && this.recognition) {
+      this.recognition.stop();
+    }
   }
 
   selectColor(colorName: string): void {
@@ -366,6 +446,21 @@ export class NoteForm {
 
   togglePin(): void {
     this.isPinned.update(p => !p);
+  }
+
+  toggleListening(): void {
+    if (!this.recognition) return;
+    
+    if (this.isListening()) {
+      this.recognition.stop();
+    } else {
+      this.expandForm();
+      try {
+        this.recognition.start();
+      } catch (e) {
+        console.error('Could not start recognition', e);
+      }
+    }
   }
 
   onSubmit(event: Event): void {
