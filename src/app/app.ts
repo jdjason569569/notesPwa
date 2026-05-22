@@ -130,6 +130,17 @@ export class App implements OnInit {
     });
   }
 
+  // Haptic Feedback Helper
+  private triggerHaptic(pattern: number | number[]): void {
+    if (typeof window !== 'undefined' && navigator.vibrate) {
+      try {
+        navigator.vibrate(pattern);
+      } catch (e) {
+        // Ignorar si falla o el navegador lo bloquea
+      }
+    }
+  }
+
   // Save Note (Handle both create and edit)
   onSaveNote(noteData: Omit<Note, 'id' | 'createdAt'>): void {
     const currentEdit = this.editingNote();
@@ -139,6 +150,8 @@ export class App implements OnInit {
     } else {
       this.noteService.addNote(noteData);
     }
+    // Patrón de éxito: doble toque ligero
+    this.triggerHaptic([10, 50, 10]);
   }
 
   // Edit Trigger
@@ -160,11 +173,15 @@ export class App implements OnInit {
     if (this.editingNote()?.id === id) {
       this.editingNote.set(null);
     }
+    // Patrón de borrado/advertencia: doble toque más fuerte
+    this.triggerHaptic([40, 50, 40]);
   }
 
   // Toggle Pin Status
   onTogglePin(id: string): void {
     this.noteService.togglePin(id);
+    // Patrón sutil: un solo toque muy ligero
+    this.triggerHaptic(15);
   }
 
   // Install PWA trigger
