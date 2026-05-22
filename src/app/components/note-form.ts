@@ -106,7 +106,7 @@ import { NoteService } from '../services/note.service';
               <button 
                 type="submit" 
                 class="btn btn-primary"
-                [disabled]="!title().trim() || !content().trim()"
+                [disabled]="!content().trim()"
               >
                 {{ editNote() ? 'Guardar' : 'Agregar' }}
               </button>
@@ -371,13 +371,15 @@ export class NoteForm {
   onSubmit(event: Event): void {
     event.preventDefault();
     console.log('[ZenNotes] onSubmit called. title:', this.title(), 'content:', this.content());
-    if (!this.title().trim() || !this.content().trim()) {
-      console.log('[ZenNotes] Validation failed: empty title or content');
+    if (!this.content().trim()) {
+      console.log('[ZenNotes] Validation failed: empty content');
       return;
     }
 
+    const finalTitle = this.title().trim() || 'Sin título';
+
     this.save.emit({
-      title: this.title().trim(),
+      title: finalTitle,
       content: this.content().trim(),
       category: this.category(),
       color: this.color(),
