@@ -46,6 +46,26 @@ export class App implements OnInit {
   }
 
   ngOnInit(): void {
+    // Gyroscope Parallax Effect
+    if (typeof window !== 'undefined' && window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', (e) => {
+        if (e.beta !== null && e.gamma !== null) {
+          const maxTilt = 15;
+          // Asumimos que el usuario sostiene el móvil a ~45 grados, ajustamos el centro
+          let tiltX = e.beta - 45;
+          let tiltY = e.gamma;
+
+          // Limitamos el máximo grado de inclinación
+          tiltX = Math.max(-maxTilt, Math.min(maxTilt, tiltX));
+          tiltY = Math.max(-maxTilt, Math.min(maxTilt, tiltY));
+
+          // Asignamos las variables CSS de forma global
+          document.documentElement.style.setProperty('--tilt-x', `${-tiltX}deg`);
+          document.documentElement.style.setProperty('--tilt-y', `${tiltY}deg`);
+        }
+      });
+    }
+
     // Catch beforeinstallprompt to enable custom PWA installation button
     if (typeof window !== 'undefined') {
       window.addEventListener('beforeinstallprompt', (e) => {

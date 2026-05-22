@@ -66,7 +66,9 @@ import { Note } from '../models/note.model';
       border-top: 4px solid var(--note-primary);
       border-radius: var(--border-radius-md);
       box-shadow: var(--shadow-sm);
-      transition: all var(--transition-normal);
+      transition: background var(--transition-normal), box-shadow var(--transition-normal), border var(--transition-normal);
+      transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+      transform-style: preserve-3d;
       position: relative;
       overflow: hidden;
       cursor: pointer;
@@ -74,7 +76,7 @@ import { Note } from '../models/note.model';
 
     /* Hover effect */
     .note-card:hover {
-      transform: translateY(-4px);
+      transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(-4px);
       background: var(--bg-card-hover);
       box-shadow: var(--shadow-md), var(--note-glow-effect);
       border-color: var(--note-border-color);
