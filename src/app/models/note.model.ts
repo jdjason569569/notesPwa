@@ -6,4 +6,5 @@ export interface Note {
   color: string; // Theme color name or hex
   createdAt: number; // Timestamp
   isPinned: boolean;
+  isPrivate: boolean;
 }

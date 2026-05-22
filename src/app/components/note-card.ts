@@ -1,6 +1,7 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Note } from '../models/note.model';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-note-card',
@@ -27,8 +28,18 @@ import { Note } from '../models/note.model';
 
       <!-- Card Content -->
       <div class="card-body" (click)="onEdit()">
-        <h3 class="note-title">{{ note().title }}</h3>
-        <p class="note-content">{{ note().content }}</p>
+        @if (isLocked()) {
+          <div class="locked-content">
+            <span class="material-icons-round lock-icon">lock</span>
+            <p>Nota Privada</p>
+            <button class="btn btn-primary unlock-btn" (click)="onUnlock($event)">
+              Desbloquear
+            </button>
+          </div>
+        } @else {
+          <h3 class="note-title">{{ note().title }}</h3>
+          <p class="note-content">{{ note().content }}</p>
+        }
       </div>
 
       <!-- Card Footer -->
@@ -204,18 +215,57 @@ import { Note } from '../models/note.model';
       background: var(--color-ocean-bg);
     }
 
-    .delete-btn:hover {
-      color: var(--color-rose);
-      background: var(--color-rose-bg);
+    .locked-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      gap: 8px;
     }
+
+    .lock-icon {
+      font-size: 2.5rem;
+      color: var(--color-purple);
+      opacity: 0.7;
+    }
+
+    .unlock-btn {
+      margin-top: 8px;
+      padding: 6px 16px;
+      font-size: 0.85rem;
+      background: var(--color-purple);
+      color: white;
+      border-radius: var(--border-radius-sm);
+    }
+    
+    .unlock-btn:hover {
+      background: var(--color-purple-border);
+    }
+
   `]
 })
 export class NoteCard {
+  authService = inject(AuthService);
+
   // Signals input/output
   note = input.required<Note>();
   delete = output<string>();
   togglePin = output<string>();
   edit = output<Note>();
+
+  isLocked(): boolean {
+    return this.note().isPrivate && !this.authService.isAuthenticated();
+  }
+
+  async onUnlock(event: Event): Promise<void> {
+    event.stopPropagation();
+    const success = await this.authService.authenticate();
+    if (!success) {
+      alert('Autenticación fallida o cancelada.');
+    }
+  }
 
   onTogglePin(event: Event): void {
     event.stopPropagation(); // Avoid triggering edit action on parent click
@@ -230,6 +280,9 @@ export class NoteCard {
   }
 
   onEdit(): void {
+    if (this.isLocked()) {
+      return; // Do not allow editing if locked
+    }
     this.edit.emit(this.note());
   }
 }

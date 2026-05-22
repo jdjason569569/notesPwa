@@ -87,6 +87,18 @@ import { NoteService } from '../services/note.service';
                     {{ isPinned() ? 'push_pin' : 'push_pin_outlined' }}
                   </span>
                 </button>
+
+                <button 
+                  type="button" 
+                  class="btn-icon private-toggle" 
+                  [class.active]="isPrivate()"
+                  (click)="togglePrivate()"
+                  [title]="isPrivate() ? 'Hacer pública' : 'Hacer privada (Requiere biometría)'"
+                >
+                  <span class="material-icons-round">
+                    {{ isPrivate() ? 'lock' : 'lock_open' }}
+                  </span>
+                </button>
               </div>
             </div>
 
@@ -234,6 +246,15 @@ import { NoteService } from '../services/note.service';
       transform: rotate(45deg);
     }
 
+    .private-toggle {
+      color: var(--text-muted);
+      transition: all var(--transition-fast);
+    }
+
+    .private-toggle:hover, .private-toggle.active {
+      color: var(--color-purple);
+    }
+
     .mic-toggle {
       color: var(--text-muted);
       transition: all var(--transition-fast);
@@ -359,6 +380,7 @@ export class NoteForm {
   category = signal<string>('Idea');
   color = signal<string>('purple');
   isPinned = signal<boolean>(false);
+  isPrivate = signal<boolean>(false);
   
   // Collapse State
   isExpanded = signal<boolean>(false);
@@ -378,6 +400,7 @@ export class NoteForm {
         this.category.set(note.category);
         this.color.set(note.color);
         this.isPinned.set(note.isPinned);
+        this.isPrivate.set(note.isPrivate || false);
         this.isExpanded.set(true);
       } else {
         this.resetForm();
@@ -449,6 +472,7 @@ export class NoteForm {
     this.category.set('Idea');
     this.color.set('purple');
     this.isPinned.set(false);
+    this.isPrivate.set(false);
     this.isExpanded.set(false);
     if (this.isListening() && this.recognition) {
       this.recognition.stop();
@@ -461,6 +485,10 @@ export class NoteForm {
 
   togglePin(): void {
     this.isPinned.update(p => !p);
+  }
+
+  togglePrivate(): void {
+    this.isPrivate.update(p => !p);
   }
 
   toggleListening(): void {
@@ -493,7 +521,8 @@ export class NoteForm {
       content: this.content().trim(),
       category: this.category(),
       color: this.color(),
-      isPinned: this.isPinned()
+      isPinned: this.isPinned(),
+      isPrivate: this.isPrivate()
     });
     console.log('[ZenNotes] Note emitted successfully');
 

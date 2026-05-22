@@ -50,6 +50,15 @@
           {{ isDarkMode() ? 'light_mode' : 'dark_mode' }}
         </span>
       </button>
+
+      <!-- Lock Vault Button -->
+      @if (authService.isAuthenticated()) {
+        <button class="btn-icon lock-vault-btn" (click)="authService.lock()" title="Bloquear Notas Privadas">
+          <span class="material-icons-round" style="color: var(--color-purple)">
+            lock
+          </span>
+        </button>
+      }
     </div>
   </div>
 </header>
